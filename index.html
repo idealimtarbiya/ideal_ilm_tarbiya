@@ -42,8 +42,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ideal Ilm Tarbiya</title>
     <meta name="keywords" content="ideal, ilm, tarbiya, ideal_ilm_tarbiya, xususiy, maktab, xususiy_maktab, o'quv, ta'lim, maktab haqida, ro'yxatdan o'tish">
+    <title>Ideal Ilm Tarbiya</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="logo.png" rel="icon">
     <link href="apple-touch-icon.png" rel="apple-touch-icon">
@@ -258,17 +258,52 @@
         }
         @media (max-width: 768px) {
             .nav-links {
-                font-size: 14px;
-                gap: 10px;
+                display: none; /* Mobil uchun menyuni yashirish */
             }
-            .slider {
-                height: 300px;
-            }
-            h2 {
-                font-size: 2rem;
+            .logo span {
+                font-size: 20px;
             }
             .logo img {
                 height: 40px;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+            section {
+                padding: 20px 10px;
+            }
+            .teachers-grid, .achievements-grid {
+                grid-template-columns: 1fr; /* Mobilda bir ustunda */
+            }
+            .teacher-card img, .achievement-card img {
+                height: 150px;
+            }
+            .news-images img {
+                margin-bottom: 10px;
+            }
+            .form-group button {
+                padding: 10px 20px;
+                font-size: 1rem;
+                min-width: 150px;
+            }
+            .video-container {
+                padding-bottom: 75%; /* Mobil uchun videoni kengaytirish */
+            }
+        }
+        @media (max-width: 480px) {
+            .logo span {
+                font-size: 18px;
+            }
+            .logo img {
+                height: 35px;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .form-group button {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+                min-width: 120px;
             }
         }
         @keyframes fadeIn {
