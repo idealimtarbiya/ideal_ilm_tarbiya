@@ -1,0 +1,414 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideal Ilm Tarbiya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="logo.png" rel="icon">
+    <link href="apple-touch-icon.png" rel="apple-touch-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            background-color: #fff;
+            color: #000;
+            overflow-x: hidden;
+        }
+        header {
+            background-color: #FFC107;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            height: 50px;
+            margin-right: 10px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        .logo span {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            background-color: #000;
+            color: #FFC107;
+            border-radius: 5px;
+        }
+        section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        h2 {
+            font-size: 2.5rem;
+            color: #000;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+        h2::after {
+            content: '';
+            width: 50px;
+            height: 4px;
+            background-color: #FFC107;
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+        }
+        .slider {
+            position: relative;
+            overflow: hidden;
+            height: 900px;
+            border-radius: 10px;
+        }
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+        .slide {
+            min-width: 100%;
+            height: 900px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0,0,0,0.5);
+            color: #FFC107;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+        .prev-btn { left: 10px; }
+        .next-btn { right: 10px; }
+        .card {
+            background-color: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+        }
+        .card i {
+            color: #FFC107;
+            margin-right: 10px;
+        }
+        .teachers-grid, .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .teacher-card, .achievement-card {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .teacher-card img, .achievement-card img {
+            width: 100%;
+            height: 600px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #FFC107;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .form-group button {
+            background-color: #FFC107;
+            color: #000;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .form-group button:hover {
+            background-color: #000;
+            color: #FFC107;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        footer {
+            background-color: #000;
+            color: #FFC107;
+            text-align: center;
+            padding: 20px;
+        }
+        .social-icons {
+            margin-top: 10px;
+        }
+        .social-icons a {
+            color: #FFC107;
+            font-size: 1.5rem;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        .social-icons a:hover {
+            color: #fff;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                font-size: 14px;
+                gap: 10px;
+            }
+            .slider {
+                height: 300px;
+            }
+            h2 {
+                font-size: 2rem;
+            }
+            .logo img {
+                height: 40px;
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        section {
+            animation: fadeIn 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="logo.png" alt="Ideal Ilm Tarbiya Logo">
+            <span>Ideal Ilm Tarbiya</span>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#news"><i class="fas fa-newspaper"></i> Yangiliklar</a></li>
+                <li><a href="#achievements"><i class="fas fa-trophy"></i> Yutuqlar</a></li>
+                <li><a href="#teachers"><i class="fas fa-chalkboard-teacher"></i> O'qituvchilar</a></li>
+                <li><a href="#school"><i class="fas fa-school"></i> Maktab</a></li>
+                <li><a href="#registration"><i class="fas fa-user-plus"></i> Ro'yxatdan o'tish</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="news">
+        <h2>Yangiliklar</h2>
+        <div class="slider">
+            <div class="slides">
+                <div class="slide" style="background-image: url('photo_2025-06-22_00-19-37.jpg');">
+                    IDEAL XUSUSIY MAKTABIDA QABUL BOSHLANDI!
+                </div>
+                <div class="slide" style="background-image: url('photo_2025-06-22_00-19-37.jpg');">
+                    IDEAL XUSUSIY MAKTABIDA QABUL BOSHLANDI!
+                </div>
+                <div class="slide" style="background-image: url('photo_2025-06-22_00-19-37.jpg');">
+                    IDEAL XUSUSIY MAKTABIDA QABUL BOSHLANDI!
+                </div>                
+            </div>
+            <button class="slider-btn prev-btn"><i class="fas fa-chevron-left"></i></button>
+            <button class="slider-btn next-btn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </section>
+
+    <section id="achievements">
+        <h2>Yutuqlar</h2>
+        <div class="achievements-grid">
+            <div class="achievement-card">
+                <img src="https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b" alt="Yutuq 1">
+                <h3>Olimpiadada oltin medal</h3>
+                <p><i class="fas fa-medal"></i> O'quvchilarimiz 5 ta oltin medal yutdi!</p>
+            </div>
+            <div class="achievement-card">
+                <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655" alt="Yutuq 2">
+                <h3>Ilmiy konferensiya</h3>
+                <p><i class="fas fa-microscope"></i> Xalqaro darajada loyihalar taqdimoti.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="teachers">
+        <h2>O'qituvchilar</h2>
+        <div class="teachers-grid">
+            <div class="teacher-card">
+                <img src="2-rasm.jpg" alt="O'qituvchi 1">
+                <h3>Xolmatov Mirzoxid</h3>
+                <p><i class="fas fa-chalkboard"></i> Kimyo fani o'qituvchisi(Direktor), 15 yil tajriba.</p>
+            </div>
+            <div class="teacher-card">
+                <img src="3-rasm.jpg" alt="O'qituvchi 2">
+                <h3>Mo'ydinov Muslimbek</h3>
+                <p><i class="fas fa-book"></i> Kimyo fani o'qituvchisi, 15 yil tajriba.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="school">
+        <h2>Maktab haqida</h2>
+        <div class="card">
+            <p><i class="fas fa-graduation-cap"></i> "Ideal Ilm Tarbiya" xususiy maktabi har bir o'quvchiga zamonaviy ta'lim, individual yondashuv va rivojlanish uchun qulay muhitni taklif qiladi.</p>
+            <div class="video-container">
+                <iframe src="Ideal_ilm_tarbiya_maktabiga_qabullar_davom_etmoqda!Maktab_haqida.mp4" title="Maktab haqida video" allowfullscreen></iframe>
+            </div>
+        </div>
+    </section>
+
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3031.7091951921184!2d70.8822038493102!3d40.44206195691482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38baf30430852655%3A0x4bad12a7dab0281c!2sIdeal%20xususiy%20maktabi!5e0!3m2!1sru!2s!4v1689483227644!5m2!1sru!2s" width="100%" height="550" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+
+    <section id="registration">
+        <h2>Ro'yxatdan o'tish</h2>
+        <div class="card">
+            <p><i class="fas fa-user-plus"></i> Maktabimizga yozilish uchun quyidagi tugmani bosing va formani to'ldiring. Tez orada siz bilan bog'lanamiz!</p>
+            <div class="form-group">
+                <a href="https://forms.gle/RWAin3CV2gYkuAW68" target="_blank">
+                    <button type="button">Ro'yxatdan o'tish</button>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p><i class="fas fa-copyright"></i> © 2025 "Ideal Ilm Tarbiya" xususiy maktabi. Barcha huquqlar himoyalangan.</p>
+        <div class="social-icons">
+            <a href="https://t.me/IDEAL_xususiy_maktabi" target="_blank"><i class="fab fa-telegram"></i></a>
+            <a href="https://www.instagram.com/ideal_ilm_tarbiya/" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.youtube.com/@IDEAL_ILM_TARBIA" target="_blank"><i class="fab fa-youtube"></i></a>
+        </div>
+    </footer>
+
+    <script>
+        // Слайдер для новостей
+        const slides = document.querySelector('.slides');
+        const slideCount = document.querySelectorAll('.slide').length;
+        let currentSlide = 0;
+
+        document.querySelector('.next-btn').addEventListener('click', () => {
+            currentSlide = (currentSlide + 1) % slideCount;
+            slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+        });
+
+        document.querySelector('.prev-btn').addEventListener('click', () => {
+            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
+            slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+        });
+
+        // Автоскролл слайдера
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slideCount;
+            slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }, 5000);
+
+        // Обработка формы
+        document.getElementById('regForm').addEventListener('submit', e => {
+            e.preventDefault();
+            alert('Forma yuborildi! Tez orada siz bilan bog\'lanamiz.');
+            e.target.reset();
+        });
+    </script>
+</body>
+</html>
